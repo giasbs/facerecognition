@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Recognition System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="header">
+        <h1>Face Recognition System</h1>
+        <p>Capture faces, train model, and recognize in real-time</p>
+    </div>
+
+    <div class="container">
+        <!-- Left Panel: Data Collection -->
+        <div class="panel left-panel">
+            <h2>Data Collection</h2>
+
+            <div class="section">
+                <h3>Live Camera Feed</h3>
+                <div class="video-container">
+                    <img id="videoFeed" src="{{ url_for('video_feed') }}" alt="Camera Feed">
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>Capture Face Data</h3>
+                <form id="captureForm">
+                    <div class="form-group">
+                        <label for="personName">Person Name:</label>
+                        <input type="text" id="personName" name="personName" placeholder="Enter name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="numImages">Number of Images:</label>
+                        <input type="number" id="numImages" name="numImages" value="50" min="10" max="200">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Capture Data</button>
+                </form>
+            </div>
+
+            <div class="section">
+                <h3>Dataset Information</h3>
+                <button id="refreshDataset" class="btn btn-secondary">Refresh Dataset</button>
+                <div id="datasetInfo" class="dataset-info">
+                    <p class="loading">Loading...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel: Training & Recognition -->
+        <div class="panel right-panel">
+            <h2>Training & Recognition</h2>
+
+            <div class="section">
+                <h3>Train Model</h3>
+                <p class="info-text">Train the face recognition model with collected data</p>
+                <button id="trainBtn" class="btn btn-success">Train Model</button>
+                <div id="trainingStatus" class="status-message"></div>
+            </div>
+
+            <div class="section">
+                <h3>Live Face Recognition</h3>
+                <div id="modelStatus" class="model-status">
+                    <span class="status-indicator" id="statusIndicator"></span>
+                    <span id="statusText">Checking model status...</span>
+                </div>
+                <div class="video-container">
+                    <img id="recognitionFeed" src="{{ url_for('recognition_feed') }}" alt="Recognition Feed">
+                </div>
+                <div class="recognition-info">
+                    <p><strong>Instructions:</strong></p>
+                    <ul>
+                        <li>Green box: Person recognized</li>
+                        <li>Red box: Unknown person</li>
+                        <li>Confidence score shows recognition accuracy</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Face Recognition System &copy; 2025 | Built with OpenCV, Flask & Python</p>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
