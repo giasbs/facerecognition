@@ -500,3 +500,405 @@ document.querySelectorAll('.btn, .tab-btn').forEach(btn => {
         }, 150);
     });
 });
+
+// ============================================
+// DRAWING FUNCTIONALITY
+// ============================================
+
+// Drawing state management
+const drawingState = {
+    capture: {
+        active: false,
+        canvas: null,
+        ctx: null,
+        tool: 'pen',
+        color: '#ff0000',
+        lineWidth: 3,
+        isDrawing: false,
+        startX: 0,
+        startY: 0,
+        snapshot: null
+    },
+    recognition: {
+        active: false,
+        canvas: null,
+        ctx: null,
+        tool: 'pen',
+        color: '#00ff00',
+        lineWidth: 3,
+        isDrawing: false,
+        startX: 0,
+        startY: 0,
+        snapshot: null
+    }
+};
+
+// Initialize drawing for both canvases
+function initializeDrawing() {
+    initializeDrawingCanvas('capture');
+    initializeDrawingCanvas('recognition');
+}
+
+// Initialize individual canvas
+function initializeDrawingCanvas(mode) {
+    const state = drawingState[mode];
+    state.canvas = document.getElementById(`${mode}DrawingCanvas`);
+
+    if (!state.canvas) return;
+
+    state.ctx = state.canvas.getContext('2d');
+
+    // Set up canvas resize
+    resizeCanvas(mode);
+    window.addEventListener('resize', () => resizeCanvas(mode));
+
+    // Drawing event listeners
+    state.canvas.addEventListener('mousedown', (e) => startDrawing(e, mode));
+    state.canvas.addEventListener('mousemove', (e) => draw(e, mode));
+    state.canvas.addEventListener('mouseup', () => stopDrawing(mode));
+    state.canvas.addEventListener('mouseout', () => stopDrawing(mode));
+
+    // Touch support
+    state.canvas.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        const mouseEvent = new MouseEvent('mousedown', {
+            clientX: touch.clientX,
+            clientY: touch.clientY
+        });
+        state.canvas.dispatchEvent(mouseEvent);
+    });
+
+    state.canvas.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        const mouseEvent = new MouseEvent('mousemove', {
+            clientX: touch.clientX,
+            clientY: touch.clientY
+        });
+        state.canvas.dispatchEvent(mouseEvent);
+    });
+
+    state.canvas.addEventListener('touchend', () => {
+        state.canvas.dispatchEvent(new MouseEvent('mouseup', {}));
+    });
+
+    // Toggle drawing button
+    const toggleBtn = document.getElementById(`toggle${capitalize(mode)}Drawing`);
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', () => toggleDrawing(mode));
+    }
+
+    // Tool buttons
+    const toolbar = document.getElementById(`${mode}DrawingToolbar`);
+    if (toolbar) {
+        const toolBtns = toolbar.querySelectorAll('.tool-btn[data-tool]');
+        toolBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                toolBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                state.tool = btn.dataset.tool;
+                updateCanvasCursor(mode);
+            });
+        });
+    }
+
+    // Color picker
+    const colorPicker = document.getElementById(`${mode}ColorPicker`);
+    if (colorPicker) {
+        colorPicker.addEventListener('change', (e) => {
+            state.color = e.target.value;
+        });
+    }
+
+    // Line width slider
+    const lineWidthSlider = document.getElementById(`${mode}LineWidth`);
+    const lineWidthDisplay = toolbar?.querySelector('.line-width-display');
+    if (lineWidthSlider) {
+        lineWidthSlider.addEventListener('input', (e) => {
+            state.lineWidth = e.target.value;
+            if (lineWidthDisplay) {
+                lineWidthDisplay.textContent = `${e.target.value}px`;
+            }
+        });
+    }
+
+    // Clear button
+    const clearBtn = document.getElementById(`${mode}ClearDrawing`);
+    if (clearBtn) {
+        clearBtn.addEventListener('click', () => clearDrawing(mode));
+    }
+
+    // Save button
+    const saveBtn = document.getElementById(`${mode}SaveDrawing`);
+    if (saveBtn) {
+        saveBtn.addEventListener('click', () => saveDrawing(mode));
+    }
+}
+
+// Resize canvas to match video feed
+function resizeCanvas(mode) {
+    const state = drawingState[mode];
+    const videoContainer = document.getElementById(`${mode}VideoContainer`);
+
+    if (!state.canvas || !videoContainer) return;
+
+    const rect = videoContainer.getBoundingClientRect();
+    state.canvas.width = rect.width;
+    state.canvas.height = rect.height;
+
+    // Restore drawing settings
+    state.ctx.strokeStyle = state.color;
+    state.ctx.lineWidth = state.lineWidth;
+    state.ctx.lineCap = 'round';
+    state.ctx.lineJoin = 'round';
+}
+
+// Toggle drawing mode
+function toggleDrawing(mode) {
+    const state = drawingState[mode];
+    const toggleBtn = document.getElementById(`toggle${capitalize(mode)}Drawing`);
+    const toolbar = document.getElementById(`${mode}DrawingToolbar`);
+
+    state.active = !state.active;
+
+    if (state.active) {
+        state.canvas.classList.add('active');
+        toggleBtn.classList.add('active');
+        toggleBtn.innerHTML = `
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+            Stop Drawing
+        `;
+        toolbar.style.display = 'flex';
+        updateCanvasCursor(mode);
+        resizeCanvas(mode);
+    } else {
+        state.canvas.classList.remove('active');
+        toggleBtn.classList.remove('active');
+        toggleBtn.innerHTML = `
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 19l7-7 3 3-7 7-3-3z"/>
+                <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
+            </svg>
+            Draw
+        `;
+        toolbar.style.display = 'none';
+        state.canvas.className = 'drawing-canvas';
+    }
+}
+
+// Update canvas cursor based on tool
+function updateCanvasCursor(mode) {
+    const state = drawingState[mode];
+    state.canvas.className = 'drawing-canvas active';
+
+    switch(state.tool) {
+        case 'pen':
+            state.canvas.classList.add('pen-mode');
+            break;
+        case 'eraser':
+            state.canvas.classList.add('eraser-mode');
+            break;
+        default:
+            state.canvas.classList.add('shape-mode');
+    }
+}
+
+// Get mouse position relative to canvas
+function getMousePos(e, mode) {
+    const state = drawingState[mode];
+    const rect = state.canvas.getBoundingClientRect();
+    return {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+    };
+}
+
+// Start drawing
+function startDrawing(e, mode) {
+    const state = drawingState[mode];
+    if (!state.active) return;
+
+    state.isDrawing = true;
+    const pos = getMousePos(e, mode);
+    state.startX = pos.x;
+    state.startY = pos.y;
+
+    // Save canvas state for shapes
+    if (state.tool !== 'pen' && state.tool !== 'eraser') {
+        state.snapshot = state.ctx.getImageData(0, 0, state.canvas.width, state.canvas.height);
+    }
+
+    // Start path for pen and eraser
+    if (state.tool === 'pen' || state.tool === 'eraser') {
+        state.ctx.beginPath();
+        state.ctx.moveTo(pos.x, pos.y);
+    }
+}
+
+// Draw function
+function draw(e, mode) {
+    const state = drawingState[mode];
+    if (!state.isDrawing || !state.active) return;
+
+    const pos = getMousePos(e, mode);
+
+    if (state.tool === 'pen') {
+        drawPen(pos, mode);
+    } else if (state.tool === 'eraser') {
+        drawEraser(pos, mode);
+    } else if (state.tool === 'line') {
+        drawLine(pos, mode);
+    } else if (state.tool === 'rectangle') {
+        drawRectangle(pos, mode);
+    } else if (state.tool === 'circle') {
+        drawCircle(pos, mode);
+    }
+}
+
+// Stop drawing
+function stopDrawing(mode) {
+    const state = drawingState[mode];
+    if (state.isDrawing) {
+        state.isDrawing = false;
+        state.snapshot = null;
+    }
+}
+
+// Drawing tools
+function drawPen(pos, mode) {
+    const state = drawingState[mode];
+    state.ctx.strokeStyle = state.color;
+    state.ctx.lineWidth = state.lineWidth;
+    state.ctx.globalCompositeOperation = 'source-over';
+
+    state.ctx.lineTo(pos.x, pos.y);
+    state.ctx.stroke();
+}
+
+function drawEraser(pos, mode) {
+    const state = drawingState[mode];
+    state.ctx.globalCompositeOperation = 'destination-out';
+    state.ctx.lineWidth = state.lineWidth * 2; // Eraser is bigger
+
+    state.ctx.lineTo(pos.x, pos.y);
+    state.ctx.stroke();
+}
+
+function drawLine(pos, mode) {
+    const state = drawingState[mode];
+
+    // Restore snapshot
+    if (state.snapshot) {
+        state.ctx.putImageData(state.snapshot, 0, 0);
+    }
+
+    state.ctx.strokeStyle = state.color;
+    state.ctx.lineWidth = state.lineWidth;
+    state.ctx.globalCompositeOperation = 'source-over';
+
+    state.ctx.beginPath();
+    state.ctx.moveTo(state.startX, state.startY);
+    state.ctx.lineTo(pos.x, pos.y);
+    state.ctx.stroke();
+}
+
+function drawRectangle(pos, mode) {
+    const state = drawingState[mode];
+
+    // Restore snapshot
+    if (state.snapshot) {
+        state.ctx.putImageData(state.snapshot, 0, 0);
+    }
+
+    state.ctx.strokeStyle = state.color;
+    state.ctx.lineWidth = state.lineWidth;
+    state.ctx.globalCompositeOperation = 'source-over';
+
+    const width = pos.x - state.startX;
+    const height = pos.y - state.startY;
+
+    state.ctx.strokeRect(state.startX, state.startY, width, height);
+}
+
+function drawCircle(pos, mode) {
+    const state = drawingState[mode];
+
+    // Restore snapshot
+    if (state.snapshot) {
+        state.ctx.putImageData(state.snapshot, 0, 0);
+    }
+
+    state.ctx.strokeStyle = state.color;
+    state.ctx.lineWidth = state.lineWidth;
+    state.ctx.globalCompositeOperation = 'source-over';
+
+    const radius = Math.sqrt(
+        Math.pow(pos.x - state.startX, 2) + Math.pow(pos.y - state.startY, 2)
+    );
+
+    state.ctx.beginPath();
+    state.ctx.arc(state.startX, state.startY, radius, 0, 2 * Math.PI);
+    state.ctx.stroke();
+}
+
+// Clear drawing
+function clearDrawing(mode) {
+    const state = drawingState[mode];
+    if (!confirm('Clear all drawings?')) return;
+
+    state.ctx.clearRect(0, 0, state.canvas.width, state.canvas.height);
+
+    // Visual feedback
+    const toolbar = document.getElementById(`${mode}DrawingToolbar`);
+    if (toolbar) {
+        toolbar.style.animation = 'none';
+        setTimeout(() => {
+            toolbar.style.animation = '';
+        }, 10);
+    }
+}
+
+// Save drawing
+function saveDrawing(mode) {
+    const state = drawingState[mode];
+    const videoImg = document.getElementById(mode === 'capture' ? 'videoFeed' : 'recognitionFeed');
+
+    // Create temporary canvas to combine video and drawing
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = state.canvas.width;
+    tempCanvas.height = state.canvas.height;
+    const tempCtx = tempCanvas.getContext('2d');
+
+    // Draw video frame
+    if (videoImg && videoImg.complete) {
+        tempCtx.drawImage(videoImg, 0, 0, tempCanvas.width, tempCanvas.height);
+    }
+
+    // Draw annotations on top
+    tempCtx.drawImage(state.canvas, 0, 0);
+
+    // Download
+    const link = document.createElement('a');
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    link.download = `face-recognition-${mode}-${timestamp}.png`;
+    link.href = tempCanvas.toDataURL('image/png');
+    link.click();
+
+    // Visual feedback
+    showStatus(`Screenshot saved successfully!`, 'success', 'trainingStatus');
+    celebrateSuccess();
+}
+
+// Helper function to capitalize
+function capitalize(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+// Initialize drawing on page load
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(initializeDrawing, 500); // Delay to ensure DOM is ready
+});

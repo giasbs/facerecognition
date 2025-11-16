@@ -874,6 +874,209 @@ body::before {
     }
 }
 
+/* Drawing Tools */
+.drawing-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    cursor: crosshair;
+    pointer-events: none;
+    z-index: 5;
+}
+
+.drawing-canvas.active {
+    pointer-events: auto;
+}
+
+.drawing-toolbar {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 12px 20px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+    box-shadow: var(--shadow-md);
+    flex-wrap: wrap;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.tool-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: #f3f4f6;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: var(--transition);
+    color: #6b7280;
+    padding: 0;
+}
+
+.tool-btn:hover {
+    background: #e5e7eb;
+    color: #667eea;
+    transform: translateY(-2px);
+}
+
+.tool-btn.active {
+    background: var(--primary-gradient);
+    color: white;
+    border-color: #667eea;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.tool-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
+.toolbar-divider {
+    width: 1px;
+    height: 30px;
+    background: #e5e7eb;
+}
+
+.color-picker {
+    width: 45px;
+    height: 40px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: var(--transition);
+    padding: 2px;
+}
+
+.color-picker:hover {
+    border-color: #667eea;
+    transform: scale(1.05);
+}
+
+.line-width-slider {
+    width: 100px;
+    height: 6px;
+    border-radius: 3px;
+    background: #e5e7eb;
+    outline: none;
+    cursor: pointer;
+}
+
+.line-width-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--primary-gradient);
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+    transition: var(--transition);
+}
+
+.line-width-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.6);
+}
+
+.line-width-slider::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--primary-gradient);
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+}
+
+.line-width-display {
+    min-width: 35px;
+    text-align: center;
+    font-weight: 700;
+    color: #667eea;
+    font-size: 0.9em;
+}
+
+.toggle-drawing-btn {
+    position: absolute;
+    top: 60px;
+    right: 15px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(10px);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    z-index: 10;
+}
+
+.toggle-drawing-btn:hover {
+    background: rgba(102, 126, 234, 0.9);
+    border-color: rgba(255, 255, 255, 0.6);
+    transform: translateY(-2px);
+}
+
+.toggle-drawing-btn.active {
+    background: var(--success-gradient);
+    border-color: #38ef7d;
+    animation: pulseGlow 2s ease-in-out infinite;
+}
+
+@keyframes pulseGlow {
+    0%, 100% {
+        box-shadow: 0 0 10px rgba(56, 239, 125, 0.5);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(56, 239, 125, 0.8);
+    }
+}
+
+.toggle-drawing-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* Video Container Position */
+.video-container {
+    position: relative;
+}
+
+/* Drawing Mode Cursor */
+.drawing-canvas.pen-mode {
+    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"/></svg>') 0 16, crosshair;
+}
+
+.drawing-canvas.eraser-mode {
+    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2"><path d="M20 20H7L3 16l10-10 7 7-4 4z"/></svg>') 10 10, crosshair;
+}
+
+.drawing-canvas.shape-mode {
+    cursor: crosshair;
+}
+
 /* Print Styles */
 @media print {
     body::before {
@@ -883,7 +1086,8 @@ body::before {
     .tab-navigation,
     .toggle-camera-btn,
     .btn,
-    .footer {
+    .footer,
+    .drawing-toolbar {
         display: none;
     }
 }
