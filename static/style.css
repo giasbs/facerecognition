@@ -215,6 +215,12 @@ body::before {
     font-weight: 800;
 }
 
+.header-controls {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
 /* Toggle Camera Button */
 .toggle-camera-btn {
     display: flex;
@@ -239,6 +245,41 @@ body::before {
 
 .toggle-camera-btn.active {
     background: var(--danger-color);
+}
+
+/* Drawing Mode Button */
+.drawing-mode-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 0.95em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    box-shadow: 0 4px 15px rgba(240, 147, 251, 0.4);
+}
+
+.drawing-mode-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(240, 147, 251, 0.6);
+}
+
+.drawing-mode-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #9ca3af;
+    box-shadow: none;
+}
+
+.drawing-mode-btn.active {
+    background: var(--success-gradient);
+    box-shadow: 0 4px 15px rgba(56, 239, 125, 0.6);
+    animation: pulseGlow 2s ease-in-out infinite;
 }
 
 /* Camera Section */
@@ -854,7 +895,13 @@ body::before {
         gap: 15px;
     }
 
-    .toggle-camera-btn {
+    .header-controls {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .toggle-camera-btn,
+    .drawing-mode-btn {
         width: 100%;
     }
 

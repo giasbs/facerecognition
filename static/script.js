@@ -48,9 +48,19 @@ function initializeTabs() {
 function initializeCameraToggles() {
     const captureCameraBtn = document.getElementById('toggleCaptureCamera');
     const recognitionCameraBtn = document.getElementById('toggleRecognitionCamera');
+    const captureDrawingModeBtn = document.getElementById('captureDrawingModeBtn');
+    const recognitionDrawingModeBtn = document.getElementById('recognitionDrawingModeBtn');
 
     captureCameraBtn.addEventListener('click', toggleCaptureCamera);
     recognitionCameraBtn.addEventListener('click', toggleRecognitionCamera);
+
+    // Add drawing mode button listeners
+    if (captureDrawingModeBtn) {
+        captureDrawingModeBtn.addEventListener('click', () => toggleDrawing('capture'));
+    }
+    if (recognitionDrawingModeBtn) {
+        recognitionDrawingModeBtn.addEventListener('click', () => toggleDrawing('recognition'));
+    }
 }
 
 // Toggle capture camera
@@ -58,6 +68,7 @@ function toggleCaptureCamera() {
     const cameraSection = document.getElementById('captureCameraSection');
     const cameraBtn = document.getElementById('toggleCaptureCamera');
     const videoFeed = document.getElementById('videoFeed');
+    const drawingModeBtn = document.getElementById('captureDrawingModeBtn');
 
     captureCameraActive = !captureCameraActive;
 
@@ -73,6 +84,8 @@ function toggleCaptureCamera() {
             </svg>
             Stop Camera
         `;
+        // Enable drawing mode button
+        drawingModeBtn.disabled = false;
         animateElement(cameraSection);
     } else {
         cameraSection.style.display = 'none';
@@ -85,6 +98,11 @@ function toggleCaptureCamera() {
             </svg>
             Start Camera
         `;
+        // Disable drawing mode button and turn off drawing if active
+        drawingModeBtn.disabled = true;
+        if (drawingState.capture.active) {
+            toggleDrawing('capture');
+        }
     }
 }
 
@@ -93,6 +111,7 @@ function toggleRecognitionCamera() {
     const cameraSection = document.getElementById('recognitionCameraSection');
     const cameraBtn = document.getElementById('toggleRecognitionCamera');
     const videoFeed = document.getElementById('recognitionFeed');
+    const drawingModeBtn = document.getElementById('recognitionDrawingModeBtn');
 
     recognitionCameraActive = !recognitionCameraActive;
 
@@ -108,6 +127,8 @@ function toggleRecognitionCamera() {
             </svg>
             Stop Recognition
         `;
+        // Enable drawing mode button
+        drawingModeBtn.disabled = false;
         animateElement(cameraSection);
     } else {
         cameraSection.style.display = 'none';
@@ -120,6 +141,11 @@ function toggleRecognitionCamera() {
             </svg>
             Start Recognition
         `;
+        // Disable drawing mode button and turn off drawing if active
+        drawingModeBtn.disabled = true;
+        if (drawingState.recognition.active) {
+            toggleDrawing('recognition');
+        }
     }
 }
 
@@ -659,6 +685,7 @@ function toggleDrawing(mode) {
     const state = drawingState[mode];
     const toggleBtn = document.getElementById(`toggle${capitalize(mode)}Drawing`);
     const toolbar = document.getElementById(`${mode}DrawingToolbar`);
+    const drawingModeBtn = document.getElementById(`${mode}DrawingModeBtn`);
 
     state.active = !state.active;
 
@@ -666,6 +693,15 @@ function toggleDrawing(mode) {
         state.canvas.classList.add('active');
         toggleBtn.classList.add('active');
         toggleBtn.innerHTML = `
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+            Stop Drawing
+        `;
+        // Update drawing mode button
+        drawingModeBtn.classList.add('active');
+        drawingModeBtn.innerHTML = `
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="18" y1="6" x2="6" y2="18"/>
                 <line x1="6" y1="6" x2="18" y2="18"/>
@@ -684,6 +720,16 @@ function toggleDrawing(mode) {
                 <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
             </svg>
             Draw
+        `;
+        // Update drawing mode button
+        drawingModeBtn.classList.remove('active');
+        drawingModeBtn.innerHTML = `
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 19l7-7 3 3-7 7-3-3z"/>
+                <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
+                <path d="M2 2l7.586 7.586"/>
+            </svg>
+            Drawing Mode
         `;
         toolbar.style.display = 'none';
         state.canvas.className = 'drawing-canvas';

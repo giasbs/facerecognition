@@ -61,13 +61,23 @@
             <div class="card">
                 <div class="card-header">
                     <h2>Data Collection</h2>
-                    <button class="toggle-camera-btn" id="toggleCaptureCamera">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-                            <circle cx="12" cy="13" r="4"/>
-                        </svg>
-                        Start Camera
-                    </button>
+                    <div class="header-controls">
+                        <button class="toggle-camera-btn" id="toggleCaptureCamera">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                                <circle cx="12" cy="13" r="4"/>
+                            </svg>
+                            Start Camera
+                        </button>
+                        <button class="drawing-mode-btn" id="captureDrawingModeBtn" disabled>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 19l7-7 3 3-7 7-3-3z"/>
+                                <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
+                                <path d="M2 2l7.586 7.586"/>
+                            </svg>
+                            Drawing Mode
+                        </button>
+                    </div>
                 </div>
 
                 <div class="camera-section" id="captureCameraSection" style="display: none;">
@@ -260,13 +270,23 @@
             <div class="card">
                 <div class="card-header">
                     <h2>Live Face Recognition</h2>
-                    <button class="toggle-camera-btn" id="toggleRecognitionCamera">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-                            <circle cx="12" cy="13" r="4"/>
-                        </svg>
-                        Start Recognition
-                    </button>
+                    <div class="header-controls">
+                        <button class="toggle-camera-btn" id="toggleRecognitionCamera">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                                <circle cx="12" cy="13" r="4"/>
+                            </svg>
+                            Start Recognition
+                        </button>
+                        <button class="drawing-mode-btn" id="recognitionDrawingModeBtn" disabled>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 19l7-7 3 3-7 7-3-3z"/>
+                                <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
+                                <path d="M2 2l7.586 7.586"/>
+                            </svg>
+                            Drawing Mode
+                        </button>
+                    </div>
                 </div>
 
                 <div class="model-status-card">
